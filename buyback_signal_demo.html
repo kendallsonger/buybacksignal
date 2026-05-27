@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<!-- saved from url=(0064)file:///Users/kendallsonger/Downloads/buyback_signal_demo_3.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BuybackSignal — CFO Decision Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+<link href="./buyback_signal_demo_files/css2" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink: #0a0c10; --ink-2: #2d3142; --ink-3: #5c6278; --ink-4: #9099b0;
+    --rule: #e2e5ed; --surface: #f7f8fa; --white: #ffffff;
+    --green: #0d7a55; --green-bg: #eaf6f2; --green-mid: #1a9e6e;
+    --red: #c0392b; --red-bg: #fdf0ee;
+    --amber: #b45309; --amber-bg: #fef3e2;
+    --blue: #1e40af; --blue-bg: #eff4ff; --accent: #1a56db;
+    --mono: 'DM Mono', monospace; --serif: 'Instrument Serif', serif; --sans: 'DM Sans', sans-serif;
+  }
+  html { font-size: 16px; scroll-behavior: smooth; }
+  body { font-family: var(--sans); background: var(--white); color: var(--ink); line-height: 1.6; overflow-x: hidden; }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 3rem; height: 56px;
+    background: rgba(255,255,255,0.92); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--rule);
+  }
+  .nav-brand { display: flex; align-items: center; gap: 10px; }
+  .nav-logo { width: 28px; height: 28px; background: var(--ink); border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+  .nav-logo svg { width: 14px; height: 14px; }
+  .nav-name { font-size: 15px; font-weight: 600; letter-spacing: -0.02em; }
+  .nav-links { display: flex; gap: 2rem; }
+  .nav-links a { font-size: 13px; font-weight: 500; color: var(--ink-3); text-decoration: none; cursor: pointer; transition: color 0.15s; }
+  .nav-links a:hover, .nav-links a.active { color: var(--ink); }
+  .nav-tag { font-family: var(--mono); font-size: 11px; color: var(--ink-4); background: var(--surface); border: 1px solid var(--rule); padding: 4px 10px; border-radius: 20px; }
+
+  section { display: none; padding: 80px 0 0; min-height: 100vh; }
+  section.active { display: block; }
+  .container { max-width: 960px; margin: 0 auto; padding: 0 3rem; }
+
+  /* TICKER SELECTOR */
+  .ticker-bar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 1.25rem 0; border-bottom: 1px solid var(--rule); margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .ticker-bar-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-4); flex-shrink: 0; }
+  .ticker-btn {
+    font-family: var(--mono); font-size: 12px; font-weight: 500;
+    padding: 6px 16px; border-radius: 6px; border: 1px solid var(--rule);
+    background: var(--white); color: var(--ink-3); cursor: pointer;
+    transition: all 0.15s; letter-spacing: 0.04em;
+  }
+  .ticker-btn:hover { border-color: var(--ink-3); color: var(--ink); }
+  .ticker-btn.active { background: var(--ink); color: var(--white); border-color: var(--ink); }
+  .ticker-btn .ticker-name { font-family: var(--sans); font-size: 10px; color: inherit; opacity: 0.65; margin-left: 4px; }
+
+  /* LOADING STATE */
+  .analyzing-bar {
+    display: none; align-items: center; gap: 12px;
+    background: var(--blue-bg); border: 1px solid #bfcfef;
+    border-radius: 8px; padding: 10px 16px; margin-bottom: 1.5rem;
+    font-size: 13px; color: var(--blue);
+  }
+  .analyzing-bar.visible { display: flex; }
+  .spinner { width: 14px; height: 14px; border: 2px solid #bfcfef; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* HERO */
+  .hero { padding: 2.5rem 0 2rem; }
+  .hero-eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+  .hero-eyebrow::before { content: ''; display: block; width: 24px; height: 1px; background: var(--accent); }
+  .hero h1 { font-family: var(--serif); font-size: clamp(2rem, 4vw, 3rem); line-height: 1.1; letter-spacing: -0.01em; margin-bottom: 1rem; max-width: 680px; }
+  .hero h1 em { font-style: italic; color: var(--ink-3); }
+  .hero-sub { font-size: 16px; color: var(--ink-3); max-width: 540px; line-height: 1.7; margin-bottom: 2rem; font-weight: 300; }
+  .hero-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 2rem; }
+  .pill { font-family: var(--mono); font-size: 11px; font-weight: 500; padding: 5px 12px; border-radius: 20px; letter-spacing: 0.04em; }
+  .pill-green { background: var(--green-bg); color: var(--green); }
+  .pill-blue { background: var(--blue-bg); color: var(--blue); }
+  .pill-amber { background: var(--amber-bg); color: var(--amber); }
+
+  /* SIGNAL CARD */
+  .signal-result { display: grid; grid-template-columns: auto 1fr; border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; margin-bottom: 2rem; animation: fadeUp 0.35s ease both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+  .signal-verdict { background: var(--ink); color: var(--white); padding: 2rem 2.5rem; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; min-width: 190px; }
+  .verdict-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #8891a5; margin-bottom: 0.5rem; }
+  .verdict-action { font-family: var(--serif); font-size: 2.2rem; color: var(--white); line-height: 1; margin-bottom: 0.75rem; }
+  .verdict-ticker { font-family: var(--mono); font-size: 13px; color: #8891a5; }
+
+  .signal-body { padding: 2rem 2.5rem; background: var(--white); }
+  .signal-meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 1.5rem; }
+  .meta-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 4px; }
+  .meta-value { font-size: 15px; font-weight: 500; }
+  .meta-value.green { color: var(--green); }
+  .meta-value.amber { color: var(--amber); }
+  .meta-value.red { color: var(--red); }
+  .score-bar-wrap { background: var(--rule); border-radius: 3px; height: 4px; margin-top: 6px; }
+  .score-bar { height: 4px; border-radius: 3px; background: var(--green-mid); transition: width 0.8s ease; }
+
+  .rationale-block { background: var(--surface); border-left: 3px solid var(--accent); padding: 1rem 1.25rem; border-radius: 0 6px 6px 0; }
+  .rationale-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+  .rationale-text { font-size: 14px; color: var(--ink-2); line-height: 1.65; }
+
+  .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 12px; margin-top: 2rem; }
+
+  .claims-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+  .claims-card { border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+  .claims-header { padding: 10px 16px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+  .claims-header.bull { background: var(--green-bg); color: var(--green); }
+  .claims-header.bear { background: var(--red-bg); color: var(--red); }
+  .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .dot-green { background: var(--green); } .dot-red { background: var(--red); }
+  .claim-item { padding: 11px 16px; border-bottom: 1px solid var(--rule); }
+  .claim-item:last-child { border-bottom: none; }
+  .claim-text { font-size: 13px; color: var(--ink-2); line-height: 1.55; margin-bottom: 4px; }
+  .claim-cite { font-family: var(--mono); font-size: 10px; color: var(--ink-4); }
+
+  .breakdown-table { width: 100%; border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+  .breakdown-row { display: grid; grid-template-columns: 2fr 1.2fr 1fr 1fr; border-bottom: 1px solid var(--rule); }
+  .breakdown-row:last-child { border-bottom: none; }
+  .breakdown-row.header { background: var(--surface); }
+  .breakdown-cell { padding: 10px 16px; font-size: 13px; }
+  .breakdown-row.header .breakdown-cell { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-4); }
+  .signal-badge { display: inline-block; font-family: var(--mono); font-size: 10px; padding: 3px 8px; border-radius: 4px; font-weight: 500; }
+  .badge-bullish { background: var(--green-bg); color: var(--green); }
+  .badge-bearish { background: var(--red-bg); color: var(--red); }
+  .badge-neutral { background: var(--surface); color: var(--ink-3); }
+  .badge-clear { background: var(--green-bg); color: var(--green); }
+  .badge-constrained { background: var(--amber-bg); color: var(--amber); }
+
+  .uncertainties { border: 1px solid var(--rule); border-radius: 10px; padding: 1.25rem 1.5rem; }
+  .unc-item { display: flex; gap: 10px; align-items: flex-start; padding: 5px 0; font-size: 13px; color: var(--ink-2); line-height: 1.55; }
+  .unc-num { font-family: var(--mono); font-size: 11px; color: var(--ink-4); margin-top: 2px; flex-shrink: 0; }
+
+  /* ARCH */
+  .arch-title { font-family: var(--serif); font-size: 2rem; color: var(--ink); margin-bottom: 0.5rem; }
+  .arch-sub { font-size: 15px; color: var(--ink-3); margin-bottom: 2.5rem; font-weight: 300; }
+  .pipeline-flow { display: flex; align-items: stretch; overflow-x: auto; margin: 1.5rem 0; }
+  .pipe-node { flex: 1; min-width: 130px; background: var(--white); border: 1px solid var(--rule); padding: 1.25rem 1rem; text-align: center; position: relative; }
+  .pipe-node:first-child { border-radius: 10px 0 0 10px; }
+  .pipe-node:last-child { border-radius: 0 10px 10px 0; }
+  .pipe-node + .pipe-node { border-left: none; }
+  .pipe-node.active-phase { border-color: var(--accent); background: var(--blue-bg); }
+  .pipe-arrow-badge { position: absolute; right: -13px; top: 50%; transform: translateY(-50%); z-index: 2; background: var(--white); border: 1px solid var(--rule); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--ink-4); }
+  .pipe-icon { font-size: 18px; margin-bottom: 6px; }
+  .pipe-name { font-size: 12px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+  .pipe-desc { font-size: 11px; color: var(--ink-3); line-height: 1.4; }
+  .phase-tag { display: inline-block; font-family: var(--mono); font-size: 9px; margin-top: 8px; padding: 2px 7px; border-radius: 10px; }
+  .phase-tag.built { background: var(--green-bg); color: var(--green); }
+  .agents-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.5rem 0; }
+  .agent-card { border: 1px solid var(--rule); border-radius: 10px; padding: 1.25rem; border-top-width: 3px; }
+  .agent-card.built { border-top-color: var(--accent); }
+  .agent-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .agent-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .agent-desc { font-size: 13px; color: var(--ink-3); line-height: 1.55; }
+  .constraint-list { border: 1px solid var(--rule); border-radius: 10px; padding: 1.25rem 1.5rem; margin: 1rem 0; }
+  .constraint-item { display: flex; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--rule); font-size: 13px; color: var(--ink-2); line-height: 1.5; }
+  .constraint-item:last-child { border-bottom: none; }
+  .constraint-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ABOUT */
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 2rem 0; }
+  .stat-item { text-align: center; padding: 1.25rem 1rem; border: 1px solid var(--rule); border-radius: 10px; }
+  .stat-number { font-family: var(--serif); font-size: 2rem; color: var(--ink); line-height: 1; margin-bottom: 4px; }
+  .stat-label { font-size: 12px; color: var(--ink-4); }
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 1.5rem 0; }
+  .about-card { border: 1px solid var(--rule); border-radius: 10px; padding: 1.5rem; }
+  .about-card-title { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
+  .about-card-text { font-size: 13px; color: var(--ink-3); line-height: 1.65; }
+  .team-title { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 1rem; margin-top: 2rem; }
+  .team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+  .team-member { border: 1px solid var(--rule); border-radius: 8px; padding: 0.875rem 1rem; }
+  .team-member-name { font-size: 13px; font-weight: 500; color: var(--ink); margin-bottom: 2px; }
+  .team-member-email { font-family: var(--mono); font-size: 10px; color: var(--ink-4); }
+
+  footer { border-top: 1px solid var(--rule); padding: 2rem 3rem; display: flex; align-items: center; justify-content: space-between; }
+  footer .foot-left { font-size: 12px; color: var(--ink-4); }
+  footer .foot-right { font-family: var(--mono); font-size: 11px; color: var(--ink-4); }
+
+  .fade-in { animation: fadeUp 0.4s ease both; }
+  .fade-in-1 { animation-delay: 0.05s; }
+  .fade-in-2 { animation-delay: 0.1s; }
+  .fade-in-3 { animation-delay: 0.15s; }
+
+  @media (max-width: 700px) {
+    nav { padding: 0 1.25rem; } .container { padding: 0 1.25rem; }
+    .claims-grid, .agents-grid, .about-grid, .stat-row, .team-grid { grid-template-columns: 1fr; }
+    .signal-result { grid-template-columns: 1fr; }
+    .signal-meta { grid-template-columns: 1fr 1fr; }
+    .breakdown-row { grid-template-columns: 1fr 1fr; }
+    footer { flex-direction: column; gap: 0.5rem; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-logo">
+      <svg viewBox="0 0 14 14" fill="none"><path d="M2 10L5 7L7.5 9L12 4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    </div>
+    <span class="nav-name">BuybackSignal</span>
+  </div>
+  <div class="nav-links">
+    <a onclick="showSection(&#39;signal&#39;)" class="active" id="nav-signal">Signal</a>
+    <a onclick="showSection(&#39;architecture&#39;)" id="nav-architecture">Architecture</a>
+    <a onclick="showSection(&#39;about&#39;)" id="nav-about">About</a>
+  </div>
+  <div class="nav-tag">ACCT 535 · Stanford GSB</div>
+</nav>
+
+<!-- ══════════════════════════════════════════ SIGNAL -->
+<section id="section-signal" class="active">
+<div class="container">
+  <div class="hero fade-in">
+    <div class="hero-eyebrow">CFO decision support · multi-agent pipeline</div>
+    <h1>A CFO framework for evaluating <em>opportunistic</em> buybacks</h1>
+    <p class="hero-sub">Select a company below to see BuybackSignal's multi-agent analysis — synthesizing SEC filings, insider transaction patterns, and financial capacity into one documented recommendation.</p>
+    <div class="hero-pills">
+      <span class="pill pill-green">RAG over EDGAR filings</span>
+      <span class="pill pill-blue">Form 4 insider classifier</span>
+      <span class="pill pill-amber">Deterministic capacity gates</span>
+    </div>
+  </div>
+
+  <!-- TICKER SELECTOR -->
+  <div class="ticker-bar">
+    <span class="ticker-bar-label">Analyze</span>
+    <button class="ticker-btn active" onclick="selectTicker(&#39;AAPL&#39;)">AAPL <span class="ticker-name">Apple</span></button>
+    <button class="ticker-btn" onclick="selectTicker(&#39;MSFT&#39;)">MSFT <span class="ticker-name">Microsoft</span></button>
+    <button class="ticker-btn" onclick="selectTicker(&#39;NVDA&#39;)">NVDA <span class="ticker-name">Nvidia</span></button>
+    <button class="ticker-btn" onclick="selectTicker(&#39;XOM&#39;)">XOM <span class="ticker-name">ExxonMobil</span></button>
+  </div>
+
+  <div class="analyzing-bar" id="analyzing-bar">
+    <div class="spinner"></div>
+    <span id="analyzing-text">Running pipeline for AAPL…</span>
+  </div>
+
+  <!-- DYNAMIC CONTENT -->
+  <div id="signal-content">
+    <div class="signal-result">
+      <div class="signal-verdict">
+        <div class="verdict-label">Recommendation</div>
+        <div class="verdict-action">Initiate</div>
+        <div class="verdict-ticker">AAPL · May 2026</div>
+        <div style="margin-top:1rem">
+          <svg width="80" height="80" viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="5"></circle>
+            <circle cx="40" cy="40" r="32" fill="none" stroke="white" stroke-width="5" stroke-dasharray="201" stroke-dashoffset="52.25999999999999" stroke-linecap="round" transform="rotate(-90 40 40)"></circle>
+            <text x="40" y="45" text-anchor="middle" fill="white" font-family="DM Sans,sans-serif" font-size="15" font-weight="500">74%</text>
+          </svg>
+        </div>
+        <div class="verdict-label" style="margin-top:4px">confidence</div>
+      </div>
+      <div class="signal-body">
+        <div class="signal-meta">
+          <div class="meta-item">
+            <div class="meta-label">Composite score</div>
+            <div class="meta-value green">0.681 / 1.00</div>
+            <div class="score-bar-wrap"><div class="score-bar" id="score-bar" style="width: 68.1%;"></div></div>
+          </div>
+          <div class="meta-item"><div class="meta-label">Valuation signal</div><div class="meta-value green">Bullish · 74%</div></div>
+          <div class="meta-item"><div class="meta-label">Insider signal</div><div class="meta-value green">Bullish · 68%</div></div>
+          <div class="meta-item"><div class="meta-label">Capacity status</div><div class="meta-value green">Clear</div></div>
+          <div class="meta-item"><div class="meta-label">Filings analyzed</div><div class="meta-value">4 × 10-Q</div></div>
+          <div class="meta-item"><div class="meta-label">Form 4s reviewed</div><div class="meta-value">15 filings</div></div>
+        </div>
+        <div class="rationale-block">
+          <div class="rationale-label">Board-ready rationale</div>
+          <div class="rationale-text">Apple's most recent 10-Q filings indicate accelerating Services segment revenue growth (17% YoY) with expanding gross margins approaching 74%, providing a durable intrinsic value anchor above current trading levels. Hardware unit softness in two consecutive quarters reflects a cyclical pattern rather than structural deterioration, corroborated by stable renewal-rate commentary and no adverse covenant signals. Discretionary purchases by the CFO and two independent directors over the prior 90 days further support a valuation-conviction interpretation of recent price weakness, and all financial capacity gates are clear.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">Signal breakdown</div>
+    <div class="breakdown-table">
+      <div class="breakdown-row header">
+        <div class="breakdown-cell">Agent</div><div class="breakdown-cell">Signal</div>
+        <div class="breakdown-cell">Confidence</div><div class="breakdown-cell">Weighted score</div>
+      </div>
+      <div class="breakdown-row">
+        <div class="breakdown-cell" style="font-weight:500">Valuation Agent</div>
+        <div class="breakdown-cell"><span class="signal-badge badge-bullish">BULLISH</span></div>
+        <div class="breakdown-cell">74%</div>
+        <div class="breakdown-cell" style="font-family:var(--mono);font-size:12px">0.272</div>
+      </div>
+      <div class="breakdown-row">
+        <div class="breakdown-cell" style="font-weight:500">Insider Signal Agent</div>
+        <div class="breakdown-cell"><span class="signal-badge badge-bullish">BULLISH</span></div>
+        <div class="breakdown-cell">68%</div>
+        <div class="breakdown-cell" style="font-family:var(--mono);font-size:12px">0.156</div>
+      </div>
+      <div class="breakdown-row">
+        <div class="breakdown-cell" style="font-weight:500">Capacity Check</div>
+        <div class="breakdown-cell"><span class="signal-badge badge-clear">CLEAR</span></div>
+        <div class="breakdown-cell">100%</div>
+        <div class="breakdown-cell" style="font-family:var(--mono);font-size:12px">0.200</div>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top:2rem">Evidence · valuation agent</div>
+    <div class="claims-grid">
+      <div class="claims-card">
+        <div class="claims-header bull"><span class="dot dot-green"></span>Bull case — 3 signals</div>
+        
+    <div class="claim-item">
+      <div class="claim-text">Services revenue grew 17% YoY with gross margin expanding to 73.9%, providing a durable intrinsic value anchor above current price.</div>
+      <div class="claim-cite">10-Q · 2025-02-01 · AAPL · chunk 12</div>
+    </div>
+    <div class="claim-item">
+      <div class="claim-text">Management guided to continued double-digit Services growth with no change to capital return program language.</div>
+      <div class="claim-cite">10-Q · 2025-02-01 · AAPL · chunk 31</div>
+    </div>
+    <div class="claim-item">
+      <div class="claim-text">Free cash flow of $29.1B in the quarter leaves authorization headroom well above the proposed tranche size.</div>
+      <div class="claim-cite">10-Q · 2024-11-01 · AAPL · chunk 8</div>
+    </div>
+      </div>
+      <div class="claims-card">
+        <div class="claims-header bear"><span class="dot dot-red"></span>Bear case — 2 signals</div>
+        
+    <div class="claim-item">
+      <div class="claim-text">iPhone unit volumes declined in two consecutive quarters; management commentary on consumer demand remains cautious.</div>
+      <div class="claim-cite">10-Q · 2024-11-01 · AAPL · chunk 7</div>
+    </div>
+    <div class="claim-item">
+      <div class="claim-text">China revenue declined 11% YoY with regulatory and competitive headwinds cited without quantified forward guidance.</div>
+      <div class="claim-cite">10-Q · 2025-02-01 · AAPL · chunk 19</div>
+    </div>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top:2rem">Insider activity · form 4 classification</div>
+    <div class="breakdown-table">
+      <div class="breakdown-row header">
+        <div class="breakdown-cell">Filed</div><div class="breakdown-cell">Insider / title</div>
+        <div class="breakdown-cell">Classification</div><div class="breakdown-cell">Signal weight</div>
+      </div>
+      
+    <div class="breakdown-row">
+      <div class="breakdown-cell" style="font-family:var(--mono);font-size:12px">2025-03-14</div>
+      <div class="breakdown-cell">Luca Maestri · CFO</div>
+      <div class="breakdown-cell"><span class="signal-badge badge-bullish">DISC. BUY</span></div>
+      <div class="breakdown-cell">High · senior insider</div>
+    </div>
+    <div class="breakdown-row">
+      <div class="breakdown-cell" style="font-family:var(--mono);font-size:12px">2025-03-08</div>
+      <div class="breakdown-cell">James Bell · Director</div>
+      <div class="breakdown-cell"><span class="signal-badge badge-bullish">DISC. BUY</span></div>
+      <div class="breakdown-cell">High · director</div>
+    </div>
+    <div class="breakdown-row">
+      <div class="breakdown-cell" style="font-family:var(--mono);font-size:12px">2025-02-20</div>
+      <div class="breakdown-cell">Katherine Adams · SVP</div>
+      <div class="breakdown-cell"><span class="signal-badge badge-neutral">PLAN SALE</span></div>
+      <div class="breakdown-cell">Neutral · 10b5-1</div>
+    </div>
+    </div>
+
+    <div class="section-label" style="margin-top:2rem">Key uncertainties</div>
+    <div class="uncertainties">
+    <div class="unc-item"><span class="unc-num">01</span>China regulatory escalation could accelerate hardware revenue deterioration beyond current consensus estimates.</div>
+    <div class="unc-item"><span class="unc-num">02</span>Services growth sustainability is uncertain if DOJ antitrust remedies constrain App Store economics.</div>
+    <div class="unc-item"><span class="unc-num">03</span>Intrinsic value anchor is 87 days old — a reforecast may shift the valuation picture before execution.</div></div></div>
+
+  <div style="height:3rem"></div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════ ARCHITECTURE -->
+<section id="section-architecture">
+<div class="container" style="padding-top:2rem; padding-bottom:4rem">
+  <div class="arch-title fade-in">How it works</div>
+  <p class="arch-sub fade-in">A three-phase multi-agent pipeline connecting public filings, insider signals, and internal financial gates into a single weighted recommendation.</p>
+
+  <div class="section-label">Pipeline</div>
+  <div class="pipeline-flow fade-in">
+    <div class="pipe-node active-phase"><div class="pipe-icon">📄</div><div class="pipe-name">EDGAR ingest</div><div class="pipe-desc">10-Q / 10-K via SEC API</div><span class="phase-tag built">Phase 1</span><div class="pipe-arrow-badge">→</div></div>
+    <div class="pipe-node active-phase"><div class="pipe-icon">🔍</div><div class="pipe-name">RAG index</div><div class="pipe-desc">Chunk, embed, ChromaDB</div><span class="phase-tag built">Phase 1</span><div class="pipe-arrow-badge">→</div></div>
+    <div class="pipe-node active-phase"><div class="pipe-icon">📊</div><div class="pipe-name">Valuation agent</div><div class="pipe-desc">LLM synthesis + citations</div><span class="phase-tag built">Phase 1</span><div class="pipe-arrow-badge">→</div></div>
+    <div class="pipe-node active-phase"><div class="pipe-icon">🔏</div><div class="pipe-name">Insider agent</div><div class="pipe-desc">Form 4 classifier</div><span class="phase-tag built">Phase 2</span><div class="pipe-arrow-badge">→</div></div>
+    <div class="pipe-node active-phase"><div class="pipe-icon">⚙️</div><div class="pipe-name">Capacity check</div><div class="pipe-desc">Deterministic gates</div><span class="phase-tag built">Phase 3</span><div class="pipe-arrow-badge">→</div></div>
+    <div class="pipe-node active-phase"><div class="pipe-icon">✅</div><div class="pipe-name">Orchestrator</div><div class="pipe-desc">Weighted recommendation</div><span class="phase-tag built">Phase 3</span></div>
+  </div>
+
+  <div class="section-label" style="margin-top:2rem">Agents</div>
+  <div class="agents-grid fade-in">
+    <div class="agent-card built"><div class="agent-card-header"><div class="agent-name">Valuation Agent</div><span class="phase-tag built">Phase 1 ✓</span></div><div class="agent-desc">Runs four targeted RAG queries over indexed 10-Q/10-K filings and feeds retrieved chunks to Claude for synthesis. Every claim requires a cited source chunk, enforced by Pydantic schema. Bear case is generated before bull case to guard against confirmation bias.</div></div>
+    <div class="agent-card built"><div class="agent-card-header"><div class="agent-name">Insider Signal Agent</div><span class="phase-tag built">Phase 2 ✓</span></div><div class="agent-desc">Classifies each Form 4 trade as DISCRETIONARY_BUY, DISCRETIONARY_SELL, PLAN_GOVERNED, or AMBIGUOUS via LLM footnote extraction. Flags short cooling-off periods, plan cancellations, and clusters of discretionary selling before buyback authorizations.</div></div>
+    <div class="agent-card built"><div class="agent-card-header"><div class="agent-name">Capacity Check</div><span class="phase-tag built">Phase 3 ✓</span></div><div class="agent-desc">Purely deterministic Python — no LLM. Runs four hard gates: blackout window, authorization headroom, leverage ratio, and FCF coverage. Internal DCF and blackout calendar data never enter the model's context window.</div></div>
+    <div class="agent-card built"><div class="agent-card-header"><div class="agent-name">Orchestrator</div><span class="phase-tag built">Phase 3 ✓</span></div><div class="agent-desc">Combines sub-agent outputs using confidence-weighted scoring (50% valuation, 30% insider, 20% capacity). Maps composite score to action: Initiate ≥0.65, Accelerate ≥0.75, Pause 0.40–0.65, Cancel &lt;0.40.</div></div>
+  </div>
+
+  <div class="section-label" style="margin-top:2rem">Design constraints</div>
+  <div class="constraint-list fade-in">
+    <div class="constraint-item"><span class="constraint-icon">🔒</span>Internal DCF, FCF forecasts, and blackout calendar are never passed as tokens into any LLM context window — deterministic layer only.</div>
+    <div class="constraint-item"><span class="constraint-icon">📎</span>Every factual claim cites the exact RAG chunk that supports it. Citation is enforced by Pydantic schema, not just prompting.</div>
+    <div class="constraint-item"><span class="constraint-icon">⚖️</span>Bear case is structurally required before bull case in all agent prompts — prevents one-sided outputs.</div>
+    <div class="constraint-item"><span class="constraint-icon">🧑‍💼</span>Permission level is Recommend only. The system documents the case; a human in treasury makes the final call.</div>
+    <div class="constraint-item"><span class="constraint-icon">📋</span>All outputs are append-only logged for audit committee review.</div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════ ABOUT -->
+<section id="section-about">
+<div class="container" style="padding-top:2rem; padding-bottom:4rem">
+  <div class="arch-title fade-in">About the project</div>
+  <p class="arch-sub fade-in">ACCT 535 final project · Stanford Graduate School of Business · Spring 2026</p>
+
+  <div class="stat-row fade-in">
+    <div class="stat-item"><div class="stat-number">$1T+</div><div class="stat-label">S&amp;P 500 buybacks in 2024</div></div>
+    <div class="stat-item"><div class="stat-number">3</div><div class="stat-label">Integrated signal streams</div></div>
+    <div class="stat-item"><div class="stat-number">$1.23M</div><div class="stat-label">3-year build TCO</div></div>
+    <div class="stat-item"><div class="stat-number">Yr 2</div><div class="stat-label">Break-even vs. SaaS</div></div>
+  </div>
+
+  <div class="about-grid fade-in">
+    <div class="about-card"><div class="about-card-title">The problem</div><div class="about-card-text">A CFO deciding whether to deploy a buyback tranche faces a synthesis problem, not a data problem. The filings, transcripts, and insider-trade records exist — they are scattered across too many sources for any analyst to hold in context at once. Treasury refreshes its view quarterly; dislocations open and close in a week.</div></div>
+    <div class="about-card"><div class="about-card-title">The insight</div><div class="about-card-text">Post-2022 SEC amendments to Rule 10b5-1 collapsed short-cooling-off plan sales from 31% to 1.7% of trades. As genuinely informative insider selling was squeezed out, prices grew less efficient — making discretionary insider buying by CFOs and directors a cleaner conviction signal than at any prior point in the decade.</div></div>
+    <div class="about-card"><div class="about-card-title">Build vs. buy</div><div class="about-card-text">3-year build TCO of $1.23M modestly exceeds a comparable SaaS contract ($1.05M), but no SaaS tool has access to the firm's private DCF, blackout calendar, or authorization headroom — the inputs that constitute the actual moat.</div></div>
+    <div class="about-card"><div class="about-card-title">Permission level</div><div class="about-card-text">The system operates at Recommend — it documents the case and the human decides. The blast radius of a mistimed buyback combined with the jagged error rate of frontier LLMs over messy text rules out autonomous execution at this stage.</div></div>
+  </div>
+
+  <div class="team-title">Project team</div>
+  <div class="team-grid fade-in">
+    <div class="team-member"><div class="team-member-name">Divya Bade</div><div class="team-member-email">divbade@stanford.edu</div></div>
+    <div class="team-member"><div class="team-member-name">Chloe Feng</div><div class="team-member-email">chloefn@stanford.edu</div></div>
+    <div class="team-member"><div class="team-member-name">Murtaza Mubin</div><div class="team-member-email">murtazam@stanford.edu</div></div>
+    <div class="team-member"><div class="team-member-name">Kendall Songer</div><div class="team-member-email">ksonger@stanford.edu</div></div>
+    <div class="team-member"><div class="team-member-name">Arnab Dutta</div><div class="team-member-email">arnabd@stanford.edu</div></div>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="foot-left">BuybackSignal &nbsp;·&nbsp; ACCT 535 &nbsp;·&nbsp; Stanford GSB &nbsp;·&nbsp; Spring 2026</div>
+  <div class="foot-right" id="footer-ticker">AAPL · May 2026</div>
+</footer>
+
+<script>
+const TICKERS = {
+  AAPL: {
+    company: "Apple Inc.",
+    action: "Initiate",
+    actionVerdict: "Initiate",
+    confidence: 74,
+    compositeScore: 0.681,
+    compositeWidth: "68.1%",
+    valuationSignal: "Bullish", valuationConf: "74%", valuationBadge: "badge-bullish",
+    insiderSignal: "Bullish", insiderConf: "68%", insiderBadge: "badge-bullish",
+    capacityStatus: "Clear", capacityBadge: "badge-clear",
+    insiderWeighted: "0.156",
+    capacityWeighted: "0.200",
+    valuationWeighted: "0.272",
+    filings: "4 × 10-Q", form4s: "15 filings",
+    rationale: "Apple's most recent 10-Q filings indicate accelerating Services segment revenue growth (17% YoY) with expanding gross margins approaching 74%, providing a durable intrinsic value anchor above current trading levels. Hardware unit softness in two consecutive quarters reflects a cyclical pattern rather than structural deterioration, corroborated by stable renewal-rate commentary and no adverse covenant signals. Discretionary purchases by the CFO and two independent directors over the prior 90 days further support a valuation-conviction interpretation of recent price weakness, and all financial capacity gates are clear.",
+    compositeValueColor: "green",
+    bull: [
+      { text: "Services revenue grew 17% YoY with gross margin expanding to 73.9%, providing a durable intrinsic value anchor above current price.", cite: "10-Q · 2025-02-01 · AAPL · chunk 12" },
+      { text: "Management guided to continued double-digit Services growth with no change to capital return program language.", cite: "10-Q · 2025-02-01 · AAPL · chunk 31" },
+      { text: "Free cash flow of $29.1B in the quarter leaves authorization headroom well above the proposed tranche size.", cite: "10-Q · 2024-11-01 · AAPL · chunk 8" }
+    ],
+    bear: [
+      { text: "iPhone unit volumes declined in two consecutive quarters; management commentary on consumer demand remains cautious.", cite: "10-Q · 2024-11-01 · AAPL · chunk 7" },
+      { text: "China revenue declined 11% YoY with regulatory and competitive headwinds cited without quantified forward guidance.", cite: "10-Q · 2025-02-01 · AAPL · chunk 19" }
+    ],
+    insiderRows: [
+      { date: "2025-03-14", name: "Luca Maestri · CFO", badge: "badge-bullish", label: "DISC. BUY", weight: "High · senior insider" },
+      { date: "2025-03-08", name: "James Bell · Director", badge: "badge-bullish", label: "DISC. BUY", weight: "High · director" },
+      { date: "2025-02-20", name: "Katherine Adams · SVP", badge: "badge-neutral", label: "PLAN SALE", weight: "Neutral · 10b5-1" }
+    ],
+    uncertainties: [
+      "China regulatory escalation could accelerate hardware revenue deterioration beyond current consensus estimates.",
+      "Services growth sustainability is uncertain if DOJ antitrust remedies constrain App Store economics.",
+      "Intrinsic value anchor is 87 days old — a reforecast may shift the valuation picture before execution."
+    ]
+  },
+  MSFT: {
+    company: "Microsoft Corp.",
+    action: "Accelerate",
+    actionVerdict: "Accelerate",
+    confidence: 81,
+    compositeScore: 0.792,
+    compositeWidth: "79.2%",
+    valuationSignal: "Bullish", valuationConf: "83%", valuationBadge: "badge-bullish",
+    insiderSignal: "Bullish", insiderConf: "72%", insiderBadge: "badge-bullish",
+    capacityStatus: "Clear", capacityBadge: "badge-clear",
+    valuationWeighted: "0.345", insiderWeighted: "0.185", capacityWeighted: "0.200",
+    filings: "4 × 10-Q", form4s: "18 filings",
+    rationale: "Microsoft's Azure cloud segment delivered 29% YoY growth in the most recent quarter, and management's Copilot commentary signals durable enterprise AI monetization at scale — an intrinsic value anchor materially above current multiples. Three independent directors made discretionary purchases within a 45-day window, forming a statistically meaningful cluster with no plan-governed filings in the period. All capacity gates are clear with $68B in remaining authorization and a leverage ratio of 0.7x against a 2.0x ceiling.",
+    compositeValueColor: "green",
+    bull: [
+      { text: "Azure grew 29% YoY; management guided to re-acceleration in H2 driven by Copilot enterprise adoption.", cite: "10-Q · 2025-01-29 · MSFT · chunk 9" },
+      { text: "Operating margin expanded 200bps to 45.7%, the highest in the company's history, with AI workloads driving incremental high-margin revenue.", cite: "10-Q · 2025-01-29 · MSFT · chunk 22" },
+      { text: "$68B remaining under the current repurchase authorization with no leverage constraints; FCF of $39B last quarter.", cite: "10-Q · 2024-10-30 · MSFT · chunk 5" }
+    ],
+    bear: [
+      { text: "Consumer and device revenue declined 4% YoY; gaming segment faces structural headwinds post-Activision integration.", cite: "10-Q · 2025-01-29 · MSFT · chunk 17" },
+      { text: "Elevated capex commitments ($14B+ quarterly) for AI infrastructure compress near-term FCF conversion.", cite: "10-Q · 2024-10-30 · MSFT · chunk 11" }
+    ],
+    insiderRows: [
+      { date: "2025-02-28", name: "Satya Nadella · CEO", badge: "badge-bullish", label: "DISC. BUY", weight: "High · senior insider" },
+      { date: "2025-02-21", name: "Emma Walmsley · Director", badge: "badge-bullish", label: "DISC. BUY", weight: "High · director" },
+      { date: "2025-02-14", name: "Amy Hood · CFO", badge: "badge-bullish", label: "DISC. BUY", weight: "High · senior insider" }
+    ],
+    uncertainties: [
+      "Capex intensity for AI infrastructure may compress free cash flow conversion below historical norms for 2–3 quarters.",
+      "Azure growth re-acceleration is contingent on Copilot seat expansion — early churn data is not yet publicly disclosed.",
+      "EU regulatory scrutiny of Teams bundling could impose structural remedies affecting commercial cloud margins."
+    ]
+  },
+  NVDA: {
+    company: "Nvidia Corp.",
+    action: "Pause",
+    actionVerdict: "Pause",
+    confidence: 52,
+    compositeScore: 0.491,
+    compositeWidth: "49.1%",
+    valuationSignal: "Bearish", valuationConf: "61%", valuationBadge: "badge-bearish",
+    insiderSignal: "Neutral", insiderConf: "55%", insiderBadge: "badge-neutral",
+    capacityStatus: "Clear", capacityBadge: "badge-clear",
+    valuationWeighted: "0.122", insiderWeighted: "0.099", capacityWeighted: "0.200",
+    filings: "4 × 10-Q", form4s: "20 filings",
+    rationale: "Current trading multiples for Nvidia imply a perpetual dominance scenario in AI accelerator hardware that the filing record does not fully support — management acknowledged emerging competition from custom silicon and AMD in the most recent 10-Q. Insider activity is mixed, with the CFO's discretionary sell in January not offset by any executive-level purchases. While all capacity gates are clear, the valuation signal does not support deploying a tranche at current prices; the appropriate posture is to pause and revisit upon any price normalization.",
+    compositeValueColor: "amber",
+    bull: [
+      { text: "Data center revenue reached $47.5B in the quarter, with order backlog commentary suggesting visibility into the next two quarters.", cite: "10-Q · 2025-02-26 · NVDA · chunk 6" },
+      { text: "Gross margin of 74.6% is structurally elevated versus pre-AI levels, supporting a higher long-run intrinsic value floor.", cite: "10-Q · 2025-02-26 · NVDA · chunk 14" }
+    ],
+    bear: [
+      { text: "Management acknowledged AMD MI300X and custom silicon from hyperscalers as credible competitive alternatives in the 10-Q risk factors.", cite: "10-Q · 2025-02-26 · NVDA · chunk 31" },
+      { text: "P/E multiple of 38x forward earnings implies a growth and margin durability scenario not yet supported by competitive moat evidence.", cite: "10-Q · 2024-11-20 · NVDA · chunk 8" },
+      { text: "Export control restrictions on H20 chips to China represent a $4–5B annualized revenue headwind with no disclosed offset.", cite: "10-Q · 2025-02-26 · NVDA · chunk 24" }
+    ],
+    insiderRows: [
+      { date: "2025-01-15", name: "Colette Kress · CFO", badge: "badge-bearish", label: "DISC. SELL", weight: "Negative · senior" },
+      { date: "2025-01-09", name: "Jensen Huang · CEO", badge: "badge-neutral", label: "PLAN SALE", weight: "Neutral · 10b5-1" },
+      { date: "2024-12-20", name: "Mark Stevens · Director", badge: "badge-neutral", label: "PLAN SALE", weight: "Neutral · 10b5-1" }
+    ],
+    uncertainties: [
+      "Custom silicon from Google (TPU), Amazon (Trainium), and Microsoft (Maia) could accelerate substitution in the hyperscaler segment.",
+      "Export control escalation could expand beyond H20 to affect additional SKUs, materially compressing data center revenue.",
+      "Valuation multiples compress rapidly if AI infrastructure spend cycles down — no historical analog for current growth-at-scale pricing."
+    ]
+  },
+  XOM: {
+    company: "ExxonMobil Corp.",
+    action: "Initiate",
+    actionVerdict: "Initiate",
+    confidence: 67,
+    compositeScore: 0.658,
+    compositeWidth: "65.8%",
+    valuationSignal: "Bullish", valuationConf: "69%", valuationBadge: "badge-bullish",
+    insiderSignal: "Neutral", insiderConf: "48%", insiderBadge: "badge-neutral",
+    capacityStatus: "Constrained", capacityBadge: "badge-constrained",
+    valuationWeighted: "0.259", insiderWeighted: "0.082", capacityWeighted: "0.120",
+    filings: "4 × 10-Q", form4s: "12 filings",
+    rationale: "ExxonMobil's most recent 10-K and 10-Q filings show Permian Basin production growth tracking above internal guidance, with break-even costs at $35/bbl providing a durable FCF floor even in a $65 oil environment. The stock is trading at a modest discount to the DCF-derived intrinsic value range at current strip prices. Capacity is constrained rather than clear — leverage headroom is thin following the Pioneer acquisition financing — warranting a conservatively-sized tranche rather than full authorization deployment.",
+    compositeValueColor: "green",
+    bull: [
+      { text: "Permian production reached 1.4M BOE/day, ahead of internal guidance, with break-even costs declining to $35/bbl.", cite: "10-K · 2025-02-28 · XOM · chunk 18" },
+      { text: "Management reaffirmed $20B annual buyback program through 2026 with no changes to authorization language.", cite: "10-Q · 2025-02-05 · XOM · chunk 7" }
+    ],
+    bear: [
+      { text: "Net debt increased $18B post-Pioneer acquisition; leverage ratio of 1.9x is approaching the board's 2.0x ceiling.", cite: "10-Q · 2025-02-05 · XOM · chunk 12" },
+      { text: "Refining margin compression of 35% YoY in downstream reduces FCF diversification and increases dependence on upstream strip prices.", cite: "10-Q · 2024-11-01 · XOM · chunk 9" }
+    ],
+    insiderRows: [
+      { date: "2025-03-01", name: "Darren Woods · CEO", badge: "badge-neutral", label: "PLAN SALE", weight: "Neutral · 10b5-1" },
+      { date: "2025-02-12", name: "Kathryn Mikells · CFO", badge: "badge-neutral", label: "PLAN SALE", weight: "Neutral · 10b5-1" },
+      { date: "2025-01-28", name: "Joseph Hooley · Director", badge: "badge-bullish", label: "DISC. BUY", weight: "Moderate · director" }
+    ],
+    uncertainties: [
+      "Oil strip pricing below $60/bbl would compress FCF below the threshold needed to sustain both the dividend and buyback program simultaneously.",
+      "Pioneer integration costs and synergy timing are not yet fully disclosed — capital allocation flexibility may be lower than headline figures suggest.",
+      "Leverage at 1.9x leaves minimal headroom; any acquisition or exploration commitment would trigger the leverage hard block."
+    ]
+  }
+};
+
+function renderSignal(ticker) {
+  const d = TICKERS[ticker];
+  const bullClaims = d.bull.map(c => `
+    <div class="claim-item">
+      <div class="claim-text">${c.text}</div>
+      <div class="claim-cite">${c.cite}</div>
+    </div>`).join('');
+  const bearClaims = d.bear.map(c => `
+    <div class="claim-item">
+      <div class="claim-text">${c.text}</div>
+      <div class="claim-cite">${c.cite}</div>
+    </div>`).join('');
+  const insiderRows = d.insiderRows.map(r => `
+    <div class="breakdown-row">
+      <div class="breakdown-cell" style="font-family:var(--mono);font-size:12px">${r.date}</div>
+      <div class="breakdown-cell">${r.name}</div>
+      <div class="breakdown-cell"><span class="signal-badge ${r.badge}">${r.label}</span></div>
+      <div class="breakdown-cell">${r.weight}</div>
+    </div>`).join('');
+  const uncItems = d.uncertainties.map((u, i) => `
+    <div class="unc-item"><span class="unc-num">0${i+1}</span>${u}</div>`).join('');
+
+  return `
+    <div class="signal-result">
+      <div class="signal-verdict">
+        <div class="verdict-label">Recommendation</div>
+        <div class="verdict-action">${d.actionVerdict}</div>
+        <div class="verdict-ticker">${ticker} · May 2026</div>
+        <div style="margin-top:1rem">
+          <svg width="80" height="80" viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="5"/>
+            <circle cx="40" cy="40" r="32" fill="none" stroke="white" stroke-width="5"
+              stroke-dasharray="201" stroke-dashoffset="${201 - (201 * d.confidence / 100)}"
+              stroke-linecap="round" transform="rotate(-90 40 40)"/>
+            <text x="40" y="45" text-anchor="middle" fill="white" font-family="DM Sans,sans-serif" font-size="15" font-weight="500">${d.confidence}%</text>
+          </svg>
+        </div>
+        <div class="verdict-label" style="margin-top:4px">confidence</div>
+      </div>
+      <div class="signal-body">
+        <div class="signal-meta">
+          <div class="meta-item">
+            <div class="meta-label">Composite score</div>
+            <div class="meta-value ${d.compositeValueColor}">${d.compositeScore} / 1.00</div>
+            <div class="score-bar-wrap"><div class="score-bar" id="score-bar" style="width:0"></div></div>
+          </div>
+          <div class="meta-item"><div class="meta-label">Valuation signal</div><div class="meta-value ${d.valuationBadge === 'badge-bullish' ? 'green' : d.valuationBadge === 'badge-bearish' ? 'red' : ''}">${d.valuationSignal} · ${d.valuationConf}</div></div>
+          <div class="meta-item"><div class="meta-label">Insider signal</div><div class="meta-value ${d.insiderBadge === 'badge-bullish' ? 'green' : d.insiderBadge === 'badge-bearish' ? 'red' : ''}">${d.insiderSignal} · ${d.insiderConf}</div></div>
+          <div class="meta-item"><div class="meta-label">Capacity status</div><div class="meta-value ${d.capacityBadge === 'badge-clear' ? 'green' : 'amber'}">${d.capacityStatus}</div></div>
+          <div class="meta-item"><div class="meta-label">Filings analyzed</div><div class="meta-value">${d.filings}</div></div>
+          <div class="meta-item"><div class="meta-label">Form 4s reviewed</div><div class="meta-value">${d.form4s}</div></div>
+        </div>
+        <div class="rationale-block">
+          <div class="rationale-label">Board-ready rationale</div>
+          <div class="rationale-text">${d.rationale}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">Signal breakdown</div>
+    <div class="breakdown-table">
+      <div class="breakdown-row header">
+        <div class="breakdown-cell">Agent</div><div class="breakdown-cell">Signal</div>
+        <div class="breakdown-cell">Confidence</div><div class="breakdown-cell">Weighted score</div>
+      </div>
+      <div class="breakdown-row">
+        <div class="breakdown-cell" style="font-weight:500">Valuation Agent</div>
+        <div class="breakdown-cell"><span class="signal-badge ${d.valuationBadge}">${d.valuationSignal.toUpperCase()}</span></div>
+        <div class="breakdown-cell">${d.valuationConf}</div>
+        <div class="breakdown-cell" style="font-family:var(--mono);font-size:12px">${d.valuationWeighted}</div>
+      </div>
+      <div class="breakdown-row">
+        <div class="breakdown-cell" style="font-weight:500">Insider Signal Agent</div>
+        <div class="breakdown-cell"><span class="signal-badge ${d.insiderBadge}">${d.insiderSignal.toUpperCase()}</span></div>
+        <div class="breakdown-cell">${d.insiderConf}</div>
+        <div class="breakdown-cell" style="font-family:var(--mono);font-size:12px">${d.insiderWeighted}</div>
+      </div>
+      <div class="breakdown-row">
+        <div class="breakdown-cell" style="font-weight:500">Capacity Check</div>
+        <div class="breakdown-cell"><span class="signal-badge ${d.capacityBadge}">${d.capacityStatus.toUpperCase()}</span></div>
+        <div class="breakdown-cell">100%</div>
+        <div class="breakdown-cell" style="font-family:var(--mono);font-size:12px">${d.capacityWeighted}</div>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top:2rem">Evidence · valuation agent</div>
+    <div class="claims-grid">
+      <div class="claims-card">
+        <div class="claims-header bull"><span class="dot dot-green"></span>Bull case &mdash; ${d.bull.length} signals</div>
+        ${bullClaims}
+      </div>
+      <div class="claims-card">
+        <div class="claims-header bear"><span class="dot dot-red"></span>Bear case &mdash; ${d.bear.length} signals</div>
+        ${bearClaims}
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top:2rem">Insider activity · form 4 classification</div>
+    <div class="breakdown-table">
+      <div class="breakdown-row header">
+        <div class="breakdown-cell">Filed</div><div class="breakdown-cell">Insider / title</div>
+        <div class="breakdown-cell">Classification</div><div class="breakdown-cell">Signal weight</div>
+      </div>
+      ${insiderRows}
+    </div>
+
+    <div class="section-label" style="margin-top:2rem">Key uncertainties</div>
+    <div class="uncertainties">${uncItems}</div>`;
+}
+
+let currentTicker = 'AAPL';
+
+function selectTicker(ticker) {
+  if (ticker === currentTicker) return;
+  currentTicker = ticker;
+
+  // Update buttons
+  document.querySelectorAll('.ticker-btn').forEach(b => b.classList.remove('active'));
+  event.target.closest('.ticker-btn').classList.add('active');
+
+  // Show analyzing bar
+  const bar = document.getElementById('analyzing-bar');
+  document.getElementById('analyzing-text').textContent = `Running pipeline for ${ticker}…`;
+  bar.classList.add('visible');
+
+  // Simulate pipeline delay
+  const steps = [`Fetching EDGAR filings for ${ticker}…`, `Indexing ${ticker} into RAG pipeline…`, `Running valuation agent…`, `Classifying Form 4 filings…`, `Running capacity check…`, `Synthesizing recommendation…`];
+  let i = 0;
+  const interval = setInterval(() => {
+    i++;
+    if (i < steps.length) document.getElementById('analyzing-text').textContent = steps[i];
+  }, 280);
+
+  setTimeout(() => {
+    clearInterval(interval);
+    bar.classList.remove('visible');
+    const content = document.getElementById('signal-content');
+    content.style.opacity = '0';
+    content.innerHTML = renderSignal(ticker);
+    document.getElementById('footer-ticker').textContent = `${ticker} · May 2026`;
+    requestAnimationFrame(() => {
+      content.style.transition = 'opacity 0.3s ease';
+      content.style.opacity = '1';
+      setTimeout(() => {
+        const bar = document.getElementById('score-bar');
+        if (bar) bar.style.width = TICKERS[ticker].compositeWidth;
+      }, 100);
+    });
+  }, steps.length * 280 + 200);
+}
+
+function showSection(id) {
+  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  document.getElementById('nav-' + id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Initial render
+window.addEventListener('load', () => {
+  document.getElementById('signal-content').innerHTML = renderSignal('AAPL');
+  setTimeout(() => {
+    const bar = document.getElementById('score-bar');
+    if (bar) bar.style.width = TICKERS['AAPL'].compositeWidth;
+  }, 300);
+});
+</script>
+
+
+</body></html>
